@@ -22,7 +22,7 @@ let canDetectNote = true;
 let bubbles = [];
 let audioControlledX = 0;
 let audioControlledY = 0;
-let frequency = 0;
+let frequencys = 0;
 let volumes = 0;
 
 const noteToMidi = {
@@ -89,17 +89,21 @@ function getPitch() {
   pitch.getPitch(function (err, frequency) {
     let volume = mic.getLevel();
     volumes = volume;
+    frequencys = frequency;
     // audioControlledX = map(frequency, 100, 1000, 0, width);
     // audioControlledY = map(volume, 0, 0.1, 0, height);
-    let minPitch = 90; // Minimum expected pitch
-    let maxPitch = 400; // Maximum expected pitch
+    let minPitch = 80; // Minimum expected pitch
+    let maxPitch = 1000; // Maximum expected pitch
     frequency = frequency || 0;
+
+    let minLog = log(minPitch);
+    let maxLog = log(maxPitch);
 
     if (currentNote) {
       audioControlledX = map(
-        constrain(frequency, minPitch, maxPitch),
-        minPitch,
-        maxPitch,
+        constrain(log(frequency), minLog, maxLog),
+        minLog,
+        maxLog,
         0,
         windowWidth
       );
@@ -158,10 +162,11 @@ function getPitch() {
 function draw() {
   background(0);
   noStroke();
+
   // console.log("frequency", frequency);
 
   // Trim end of trail.
-  if (volumes > 0.01) {
+  if (volumes > 0.0001) {
     trail.push([audioControlledX, height - 100]);
   }
 
@@ -179,9 +184,11 @@ function draw() {
       trail.splice(0, 1);
     }
   }
+
   console.log("volume", volumes);
+  // console.log("frequency", frequencys);
   // Spawn particles.
-  if (volumes > 0.2) {
+  if (volumes > 0.001) {
     if (particles.length < MAX_PARTICLE_COUNT) {
       let mouse = new p5.Vector(audioControlledX, 20);
       mouse.sub(pmouseX, pmouseY);
